@@ -1,0 +1,38 @@
+steps:
+  # Step 1: Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t',
+        'gcr.io/$PROJECT_ID/form-validation:latest',
+        '.'
+      ]
+
+  # Step 2: Push the Docker image to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/form-validation:latest']
+
+  # Step 3: Deploy the updated image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      [
+        'run',
+        'deploy',
+        'form-validation-service',
+        '--image',
+        'gcr.io/$PROJECT_ID/form-validation:latest',
+        '--platform',
+        'managed',
+        '--region',
+        'us-central1',
+        '--allow-unauthenticated'
+      ]
+
+# Specify the Cloud Run region and service
+substitutions:
+  _REGION: 'us-central1'
+
+# Timeout for the build process
+timeout: '1200s'
